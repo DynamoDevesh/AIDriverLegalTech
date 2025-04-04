@@ -3,6 +3,9 @@ from flask_cors import CORS
 from sentence_transformers import SentenceTransformer, util
 from blreward_data import blreward_data
 import torch
+import os
+os.environ["TOKENIZERS_PARALLELISM"] = "false"
+
 
 app = Flask(__name__)
 CORS(app)
