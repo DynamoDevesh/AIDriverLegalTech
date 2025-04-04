@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>AIDrivenLegalTech</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <aside class="sidebar">
+            <h2>AIDrivenLegalTech</h2>
+            <button onclick="startNewChat()">+ New Chat</button>
+            <ul id="chatHistory"></ul>
+        </aside>
+        <main class="chat">
+            <div id="chatWindow"></div>
+            <div class="input-area">
+                <input type="text" id="userInput" placeholder="Type your legal question..." onkeydown="handleKey(event)">
+                <button onclick="sendMessage()">Send</button>
+            </div>
+            <div class="warning">⚠️ This chatbot is currently under development. Responses may not be accurate.</div>
+        </main>
+    </div>
+
+    <script>
+        let chatId = Date.now().toString();
+        let history = {};
+
+        function startNewChat() {
+            chatId = Date.now().toString();
+            document.getElementById("chatWindow").innerHTML = "";
+            addToSidebar(chatId);
+        }
+
+        function addToSidebar(id) {
+            const ul = document.getElementById("chatHistory");
+            const li = document.createElement("li");
+            li.textContent = "Chat " + new Date(parseInt(id)).toLocaleString();
+            li.onclick = () => loadChat(id);
+            ul.appendChild(li);
+        }
+
+        function loadChat(id) {
+            const chatWindow = document.getElementById("chatWindow");
+            chatWindow.innerHTML = "";
+            chatId = id;
+            (history[id] || []).forEach(({ sender, text }) => {
+                appendMessage(sender, text);
+            });
+        }
+
+        function handleKey(event) {
+            if (event.key === "Enter") sendMessage();
+        }
+
+        function appendMessage(sender, text) {
+            const div = document.createElement("div");
+            div.className = sender;
+            div.textContent = text;
+            document.getElementById("chatWindow").appendChild(div);
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById("userInput");
+            const message = input.value.trim();
+            if (!message) return;
+            input.value = "";
+
+            appendMessage("user", message);
+
+            const res = await fetch("/chat", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ message })
+            });
+            const data = await res.json();
+
+            appendMessage("bot", data.response);
+
+            if (!history[chatId]) history[chatId] = [];
+            history[chatId].push({ sender: "user", text: message });
+            history[chatId].push({ sender: "bot", text: data.response });
+        }
+
+        // Start with a new chat by default
+        startNewChat();
+    </script>
+</body>
+</html>

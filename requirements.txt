@@ -1,0 +1,9 @@
+Flask
+flask-cors
+sentence-transformers
+flask
+fuzzywuzzy
+python-Levenshtein
+gunicorn
+torch
+
